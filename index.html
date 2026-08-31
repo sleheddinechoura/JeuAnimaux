@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Safari des Devinettes</title>
+  <style>
+    :root {
+      --green: #4caf50;
+      --dark-green: #1f7a3a;
+      --yellow: #ffd166;
+      --orange: #f77f00;
+      --blue: #4cc9f0;
+      --pink: #ffafcc;
+      --cream: #fff8e8;
+      --ink: #263238;
+      --card: rgba(255, 255, 255, 0.92);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Trebuchet MS", Arial, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 12% 18%, rgba(255, 209, 102, 0.7), transparent 18rem),
+        radial-gradient(circle at 90% 8%, rgba(76, 201, 240, 0.55), transparent 18rem),
+        linear-gradient(160deg, #b8f2c4 0%, #f7f3c8 48%, #bde0fe 100%);
+    }
+
+    .page {
+      width: min(1000px, 94vw);
+      margin: 0 auto;
+      padding: 28px 0 40px;
+    }
+
+    header {
+      text-align: center;
+      padding: 22px;
+      border-radius: 28px;
+      background: var(--card);
+      box-shadow: 0 16px 40px rgba(31, 122, 58, 0.18);
+      border: 4px solid rgba(255, 255, 255, 0.8);
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(2rem, 6vw, 4rem);
+      color: var(--dark-green);
+    }
+
+    .subtitle {
+      margin: 0;
+      font-size: clamp(1.05rem, 2.5vw, 1.35rem);
+      line-height: 1.45;
+    }
+
+    .hero-animals {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+      font-size: 2.4rem;
+    }
+
+    main {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+      margin-top: 22px;
+    }
+
+    .panel {
+      background: var(--card);
+      border-radius: 26px;
+      padding: 22px;
+      box-shadow: 0 12px 30px rgba(38, 50, 56, 0.14);
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      text-align: center;
+    }
+
+    .stat {
+      padding: 14px 8px;
+      border-radius: 20px;
+      background: #fff4ca;
+      border: 3px dashed rgba(247, 127, 0, 0.38);
+      font-weight: 700;
+    }
+
+    .stat strong {
+      display: block;
+      margin-top: 5px;
+      font-size: 1.8rem;
+      color: var(--orange);
+    }
+
+    .question-card {
+      display: grid;
+      gap: 18px;
+      text-align: center;
+    }
+
+    .category {
+      justify-self: center;
+      padding: 8px 16px;
+      border-radius: 999px;
+      color: white;
+      background: var(--green);
+      font-weight: 800;
+      letter-spacing: 0.02em;
+    }
+
+    .riddle {
+      margin: 0;
+      font-size: clamp(1.35rem, 4vw, 2.15rem);
+      line-height: 1.35;
+      font-weight: 800;
+    }
+
+    .hint {
+      margin: 0 auto;
+      max-width: 680px;
+      color: #455a64;
+      font-size: 1.05rem;
+    }
+
+    .answers {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 18px;
+      padding: 14px 18px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+    }
+
+    button:hover:not(:disabled), button:focus-visible:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.16);
+      outline: 3px solid rgba(76, 201, 240, 0.7);
+      outline-offset: 2px;
+    }
+
+    button:disabled { cursor: not-allowed; opacity: 0.78; }
+
+    .answer {
+      background: white;
+      border: 3px solid #bee3db;
+      color: var(--ink);
+      min-height: 64px;
+    }
+
+    .answer.correct {
+      background: #d8f3dc;
+      border-color: var(--green);
+    }
+
+    .answer.wrong {
+      background: #ffd6d6;
+      border-color: #ef476f;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .primary { background: var(--orange); color: white; }
+    .secondary { background: var(--blue); color: #073b4c; }
+
+    .feedback {
+      min-height: 76px;
+      padding: 16px;
+      border-radius: 20px;
+      background: #f1fbff;
+      border: 3px solid rgba(76, 201, 240, 0.35);
+      font-size: 1.08rem;
+      line-height: 1.45;
+    }
+
+    .progress-wrap {
+      width: 100%;
+      height: 18px;
+      background: #e8f5e9;
+      border-radius: 999px;
+      overflow: hidden;
+      border: 2px solid white;
+    }
+
+    .progress {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--green), var(--yellow), var(--orange));
+      transition: width 0.25s ease;
+    }
+
+    .collection {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 10px;
+    }
+
+    .badge {
+      padding: 10px;
+      border-radius: 16px;
+      background: #f7f7f7;
+      text-align: center;
+      font-weight: 800;
+      border: 2px solid #e0e0e0;
+      filter: grayscale(1);
+      opacity: 0.6;
+    }
+
+    .badge.found {
+      filter: none;
+      opacity: 1;
+      background: #fff3b0;
+      border-color: var(--yellow);
+    }
+
+    .final-message {
+      text-align: center;
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--dark-green);
+    }
+
+    @media (max-width: 640px) {
+      .stats, .answers { grid-template-columns: 1fr; }
+      .panel { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <h1>🦁 Safari des Devinettes</h1>
+      <p class="subtitle">Devine les animaux, gagne des badges et découvre des infos rigolotes sur les mammifères, oiseaux, reptiles, insectes et animaux marins !</p>
+      <div class="hero-animals" aria-hidden="true">🐘 🐧 🐢 🐝 🐙 🦒</div>
+    </header>
+
+    <main>
+      <section class="panel stats" aria-label="Tableau de bord">
+        <div class="stat">Question <strong id="questionNumber">1/10</strong></div>
+        <div class="stat">Score <strong id="score">0</strong></div>
+        <div class="stat">Badges <strong id="badgesCount">0</strong></div>
+      </section>
+
+      <section class="panel question-card" aria-live="polite">
+        <div class="progress-wrap" aria-label="Progression du jeu"><div id="progress" class="progress"></div></div>
+        <span id="category" class="category">Catégorie</span>
+        <p id="riddle" class="riddle"></p>
+        <p id="hint" class="hint"></p>
+        <div id="answers" class="answers"></div>
+        <div id="feedback" class="feedback">Choisis une réponse pour commencer l'aventure !</div>
+        <div class="controls">
+          <button id="next" class="primary" type="button" disabled>Question suivante ➜</button>
+          <button id="restart" class="secondary" type="button">Recommencer 🔄</button>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>🏅 Ta collection d'animaux</h2>
+        <div id="collection" class="collection"></div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const riddles = [
+      {
+        animal: "Éléphant",
+        emoji: "🐘",
+        category: "Mammifère de la savane",
+        text: "Je suis très grand, j'ai une trompe pratique et de grandes oreilles. Qui suis-je ?",
+        hint: "Ma trompe me sert à boire, sentir, attraper de la nourriture et même saluer.",
+        fact: "L'éléphant est le plus grand animal terrestre. Il communique parfois avec des sons très graves que l'humain entend mal.",
+        options: ["Éléphant", "Rhinocéros", "Hippopotame", "Buffle"]
+      },
+      {
+        animal: "Pingouin",
+        emoji: "🐧",
+        category: "Oiseau marin",
+        text: "Je suis un oiseau noir et blanc, je nage très bien, mais je ne vole pas. Qui suis-je ?",
+        hint: "Mes ailes ressemblent à des nageoires quand je file dans l'eau.",
+        fact: "Le pingouin utilise son corps fuselé pour nager vite et attraper des poissons.",
+        options: ["Pingouin", "Mouette", "Canard", "Pélican"]
+      },
+      {
+        animal: "Caméléon",
+        emoji: "🦎",
+        category: "Reptile",
+        text: "Mes yeux bougent séparément et ma longue langue attrape les insectes. Qui suis-je ?",
+        hint: "Je peux changer de couleur selon mon humeur, la lumière ou la température.",
+        fact: "Le caméléon voit presque tout autour de lui sans tourner la tête, grâce à ses yeux indépendants.",
+        options: ["Caméléon", "Crocodile", "Tortue", "Iguane"]
+      },
+      {
+        animal: "Abeille",
+        emoji: "🐝",
+        category: "Insecte utile",
+        text: "Je butine les fleurs, je fabrique du miel et je vis dans une ruche. Qui suis-je ?",
+        hint: "En volant de fleur en fleur, j'aide les plantes à faire des fruits.",
+        fact: "L'abeille est une grande pollinisatrice : elle transporte du pollen entre les fleurs.",
+        options: ["Abeille", "Fourmi", "Libellule", "Coccinelle"]
+      },
+      {
+        animal: "Poulpe",
+        emoji: "🐙",
+        category: "Animal marin",
+        text: "J'ai huit bras, je suis très malin et je peux projeter de l'encre pour me défendre. Qui suis-je ?",
+        hint: "Je peux me faufiler dans de tout petits espaces car mon corps est très souple.",
+        fact: "Le poulpe est un animal très intelligent capable d'ouvrir des bocaux et de résoudre des petits problèmes.",
+        options: ["Poulpe", "Méduse", "Crabe", "Dauphin"]
+      },
+      {
+        animal: "Girafe",
+        emoji: "🦒",
+        category: "Mammifère herbivore",
+        text: "Mon très long cou m'aide à manger les feuilles en haut des arbres. Qui suis-je ?",
+        hint: "Mes taches sont comme une carte d'identité : chaque individu a un dessin différent.",
+        fact: "La girafe a une langue longue et sombre qui l'aide à attraper les feuilles épineuses des acacias.",
+        options: ["Girafe", "Zèbre", "Antilope", "Lama"]
+      },
+      {
+        animal: "Grenouille",
+        emoji: "🐸",
+        category: "Amphibien",
+        text: "Je commence ma vie dans l'eau comme têtard, puis je saute avec mes grandes pattes. Qui suis-je ?",
+        hint: "J'aime les mares, les étangs et les endroits humides.",
+        fact: "La grenouille est un amphibien : elle vit une partie de sa vie dans l'eau et une autre sur terre.",
+        options: ["Grenouille", "Lézard", "Souris", "Escargot"]
+      },
+      {
+        animal: "Renard",
+        emoji: "🦊",
+        category: "Mammifère des forêts",
+        text: "J'ai une queue touffue, un museau fin et je suis réputé rusé dans les histoires. Qui suis-je ?",
+        hint: "Je sors souvent au crépuscule pour chercher ma nourriture.",
+        fact: "Le renard a une excellente ouïe : il peut repérer de petits animaux cachés dans l'herbe ou sous la neige.",
+        options: ["Renard", "Loup", "Blaireau", "Castor"]
+      },
+      {
+        animal: "Tortue",
+        emoji: "🐢",
+        category: "Reptile à carapace",
+        text: "Je porte ma maison sur mon dos et j'avance tranquillement. Qui suis-je ?",
+        hint: "Ma carapace me protège comme une armure naturelle.",
+        fact: "La tortue possède une carapace faite d'os et d'écailles, directement liée à son squelette.",
+        options: ["Tortue", "Hérisson", "Pangolin", "Escargot"]
+      },
+      {
+        animal: "Dauphin",
+        emoji: "🐬",
+        category: "Mammifère marin",
+        text: "Je vis dans l'océan, je respire de l'air et je communique avec des sifflements. Qui suis-je ?",
+        hint: "Même si je vis dans l'eau, je ne suis pas un poisson.",
+        fact: "Le dauphin est un mammifère : il remonte à la surface pour respirer grâce à son évent.",
+        options: ["Dauphin", "Requin", "Thon", "Raie"]
+      }
+    ];
+
+    let current = 0;
+    let score = 0;
+    const found = new Set();
+
+    const questionNumber = document.getElementById("questionNumber");
+    const scoreElement = document.getElementById("score");
+    const badgesCount = document.getElementById("badgesCount");
+    const progress = document.getElementById("progress");
+    const category = document.getElementById("category");
+    const riddle = document.getElementById("riddle");
+    const hint = document.getElementById("hint");
+    const answers = document.getElementById("answers");
+    const feedback = document.getElementById("feedback");
+    const next = document.getElementById("next");
+    const restart = document.getElementById("restart");
+    const collection = document.getElementById("collection");
+
+    function shuffle(items) {
+      return [...items].sort(() => Math.random() - 0.5);
+    }
+
+    function updateCollection() {
+      collection.innerHTML = riddles.map((item) => {
+        const unlocked = found.has(item.animal);
+        return `<div class="badge ${unlocked ? "found" : ""}">${unlocked ? item.emoji : "❔"}<br>${unlocked ? item.animal : "Mystère"}</div>`;
+      }).join("");
+      badgesCount.textContent = found.size;
+    }
+
+    function showQuestion() {
+      const item = riddles[current];
+      questionNumber.textContent = `${current + 1}/${riddles.length}`;
+      scoreElement.textContent = score;
+      progress.style.width = `${(current / riddles.length) * 100}%`;
+      category.textContent = item.category;
+      riddle.textContent = item.text;
+      hint.textContent = `Indice : ${item.hint}`;
+      feedback.textContent = "À toi de jouer : touche la bonne réponse !";
+      next.disabled = true;
+      next.textContent = current === riddles.length - 1 ? "Voir mon résultat 🎉" : "Question suivante ➜";
+      answers.innerHTML = "";
+
+      shuffle(item.options).forEach((option) => {
+        const button = document.createElement("button");
+        button.className = "answer";
+        button.type = "button";
+        button.textContent = option;
+        button.addEventListener("click", () => checkAnswer(button, option));
+        answers.appendChild(button);
+      });
+    }
+
+    function checkAnswer(button, option) {
+      const item = riddles[current];
+      const isCorrect = option === item.animal;
+      document.querySelectorAll(".answer").forEach((answer) => {
+        answer.disabled = true;
+        if (answer.textContent === item.animal) answer.classList.add("correct");
+      });
+
+      if (isCorrect) {
+        score += 10;
+        found.add(item.animal);
+        feedback.innerHTML = `Bravo ! ${item.emoji} <strong>${item.animal}</strong> était la bonne réponse.<br>${item.fact}`;
+      } else {
+        button.classList.add("wrong");
+        feedback.innerHTML = `Presque ! La bonne réponse était ${item.emoji} <strong>${item.animal}</strong>.<br>${item.fact}`;
+      }
+
+      scoreElement.textContent = score;
+      next.disabled = false;
+      updateCollection();
+    }
+
+    function showResult() {
+      progress.style.width = "100%";
+      category.textContent = "Explorateur animalier";
+      riddle.textContent = "Mission terminée !";
+      hint.textContent = "Tu peux recommencer pour collectionner tous les badges.";
+      answers.innerHTML = `<p class="final-message">Ton score : ${score}/${riddles.length * 10}<br>Badges trouvés : ${found.size}/${riddles.length}</p>`;
+      feedback.textContent = score >= 70
+        ? "Fantastique ! Tu connais déjà beaucoup de choses sur les animaux."
+        : "Bien joué ! Chaque partie t'aide à apprendre de nouvelles caractéristiques.";
+      next.disabled = true;
+    }
+
+    next.addEventListener("click", () => {
+      current += 1;
+      if (current < riddles.length) showQuestion();
+      else showResult();
+    });
+
+    restart.addEventListener("click", () => {
+      current = 0;
+      score = 0;
+      found.clear();
+      updateCollection();
+      showQuestion();
+    });
+
+    updateCollection();
+    showQuestion();
+  </script>
+</body>
+</html>
